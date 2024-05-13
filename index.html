@@ -5,22 +5,29 @@
         <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
         <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+		<link rel="icon" href="images/favicon.ico">
         <style>
             body {
-               background-image: url('https://khanvani.github.io/aol/images/srisri.jpg'); 
-                background-size: cover;
+                background-color: #f8f9fa;
             }
             .white {
-                color: white;
+                color: black;
             }
+			*{
+			font-family:ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+			}
         </style>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
     <body>
         <div class="container-fluid mt-5">
-			<div class="row justify-content-end">
-                <div class="col-5" style="margin-right: 50px;margin-top: 50px;">
-                    <h1 class="text-center white">Excel to vCard Converter</h1>
-                    <h3 class="text-center white">Easily Import Bulk Contacts From Excel to Your Mobile</h3>
+		<div class="text-center">
+                <img src="images/logo.png" alt="Logo" class="img-fluid" style="max-width: 150px;">
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-lg-5 col-md-8 col-sm-10" style="margin-top: 50px;">
+                    <h1 class="text-center white">Excel to Contacts Converter</h1><BR>
+                    <h4 class="text-center white">Easily Import Bulk Contacts From Excel to Your Mobile</h4>
                     <div class="card mt-4">
                         <div class="card-body">
                             <form id="upload-form">
@@ -33,16 +40,20 @@
                             </form>
                             <form id="conversion-form" style="display:none">
                                 <div class="form-group">
-                                    <label for="name-prefix">Name Prefix: (If you want to add any prefix to Name)</label>
+                                    <label for="name-prefix">Name Prefix: <sup>(If you want to add any prefix to Name)</sup></label>
                                     <input type="text" id="name-prefix" class="form-control">
                                 </div>
                                 <div class="form-group">
-									<label for="name-column">Name:</label>
-									<select class="form-control" id="name-column" required></select>
-									<small id="nameError" class="form-text text-danger" style="display:none;">Name is required.</small>
+									<label for="first-name-column">First Name: <sup>(required)</sup></label>
+									<select class="form-control" id="first-name-column" required></select>
+									<small id="firstNameError" class="form-text text-danger" style="display:none;">First name is required.</small>
 								</div>
 								<div class="form-group">
-									<label for="contact1-column">Contact Number:</label>
+									<label for="last-name-column">Last Name: <sup>(optional)</sup></label>
+									<select class="form-control" id="last-name-column"></select>
+								</div>	
+								<div class="form-group">
+									<label for="contact1-column">Contact Number: <sup>(required)</sup></label>
 									<select class="form-control" id="contact1-column" required></select>
 									<small id="contact1Error" class="form-text text-danger" style="display:none;">Contact Number is required.</small>
 								</div>
@@ -57,10 +68,6 @@
                                 <div class="form-group">
                                     <label for="address-column">Address:</label>
                                     <select class="form-control" id="address-column"></select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="url-column">URL:</label>
-                                    <select class="form-control" id="url-column"></select>
                                 </div>
                                 <div class="form-group">
                                     <label for="bday-column">Birthday:</label>
@@ -94,7 +101,178 @@
        
         
         <script>
-		document.addEventListener("DOMContentLoaded",(e=>{var t,n;document.getElementById("excel-file").addEventListener("change",(function(e){var o=e.target.files[0];o=e.target.files[0];if("xlsx"!==o.name.split(".").pop())return document.getElementById("error-msg").hidden=!1,void(document.getElementById("next-button").disabled=!0);document.getElementById("error-msg").hidden=!0,document.getElementById("next-button").disabled=!1;var d=new FileReader;d.onload=function(e){var o=new Uint8Array(e.target.result),d=XLSX.read(o,{type:"array"}),l=d.SheetNames[0],m=d.Sheets[l];n=XLSX.utils.sheet_to_json(m,{header:1}),t=n[0];for(var u of["name-column","contact1-column","contact2-column","email-column","address-column","url-column","bday-column","org-column","groupInfo-column"]){var c=document.getElementById(u),a=document.createElement("option");a.text="",a.value="",c.add(a);for(var r=0;r<t.length;r++){var i=document.createElement("option");i.text=t[r],i.value=r,c.add(i)}}},d.readAsArrayBuffer(o)}),!1),document.getElementById("upload-form").addEventListener("submit",(function(e){e.preventDefault(),document.getElementById("upload-form").style.display="none",document.getElementById("conversion-form").style.display="block"})),document.getElementById("conversion-form").addEventListener("submit",(function(e){e.preventDefault();var t=document.getElementById("name-column").value,o=document.getElementById("contact1-column").value;if(document.getElementById("nameError").style.display="none",document.getElementById("contact1Error").style.display="none",!t)return void(document.getElementById("nameError").style.display="block");if(!o)return void(document.getElementById("contact1Error").style.display="block");var d=document.getElementById("name-prefix").value||"",l=(t=document.getElementById("name-column").value,o=document.getElementById("contact1-column").value,document.getElementById("contact2-column").value),m=document.getElementById("email-column").value,u=document.getElementById("address-column").value,c=document.getElementById("url-column").value,a=document.getElementById("bday-column").value,r=document.getElementById("org-column").value,i=document.getElementById("groupInfo-column").value,y=n.slice(1).reduce((function(e,n){return e+"BEGIN:VCARD\nVERSION:2.1\n"+(t?"N:;"+d+n[t]+";;;\n":"")+(t?"FN:"+d+n[t]+"\n":"")+(o?"TEL;CELL:"+n[o]+"\n":"")+(l?"TEL;HOME:"+n[l]+"\n":"")+(m?"EMAIL:"+n[m]+"\n":"")+(u?"ADR:"+n[u]+"\n":"")+(c?"URL:"+n[c]+"\n":"")+(a?"BDAY:"+n[a]+"\n":"")+(r?"ORG:"+n[r]+"\n":"")+(i?"NOTE:"+n[i]+"\n":"")+"END:VCARD\n"}),""),s="data:text/plain;charset=utf-8,"+encodeURIComponent(y),E=document.createElement("a");E.setAttribute("href",s),E.setAttribute("download","contacts.vcf"),E.click()})),document.getElementById("back-button").addEventListener("click",(function(){document.getElementById("conversion-form").style.display="none",document.getElementById("upload-form").style.display="block"}))}));
+		document.addEventListener('DOMContentLoaded', (event) => {
+        document.getElementById('excel-file').addEventListener('change', prepareColumnSelectors, false);
+        document.getElementById('upload-form').addEventListener('submit', showConversionForm);
+        document.getElementById('conversion-form').addEventListener('submit', convertAndDownloadVCard);
+		document.getElementById('back-button').addEventListener('click', showUploadForm);
+
+        var columnHeaders;
+        var jsonData;
+
+		function showUploadForm() {
+			document.getElementById('conversion-form').style.display = 'none';
+			document.getElementById('upload-form').style.display = 'block';
+		}
+        function prepareColumnSelectors(event) {
+            var file = event.target.files[0];
+			 var file = event.target.files[0];
+			
+			if(file.name.split('.').pop() !== 'xlsx') {
+				document.getElementById('error-msg').hidden = false;
+				document.getElementById('next-button').disabled = true;
+				return;
+			} else {
+				document.getElementById('error-msg').hidden = true;
+				document.getElementById('next-button').disabled = false;
+			}
+			
+            var reader = new FileReader();
+
+            reader.onload = function(event) {
+                var data = new Uint8Array(event.target.result);
+                var workbook = XLSX.read(data, {type: 'array'});
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                columnHeaders = jsonData[0];
+
+                var columnSelectors = ['first-name-column','last-name-column', 'contact1-column', 'contact2-column', 'email-column',
+                    'address-column', 'bday-column', 'org-column','groupInfo-column'];
+				
+                for(var selector of columnSelectors){
+                    var selectElem = document.getElementById(selector);
+					var defaultOptionElem = document.createElement("option");
+					defaultOptionElem.text = "";
+					defaultOptionElem.value = "";
+					selectElem.add(defaultOptionElem);
+                    for(var j = 0; j < columnHeaders.length; j++){
+                        var optionElem = document.createElement("option");
+                        optionElem.text = columnHeaders[j];
+                        optionElem.value = j;
+                        selectElem.add(optionElem);
+                    }
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        function showConversionForm(event) {
+            event.preventDefault(); 
+            document.getElementById('upload-form').style.display = 'none';
+            document.getElementById('conversion-form').style.display = 'block';
+        }
+
+        function convertAndDownloadVCard(event) {
+             event.preventDefault();
+			var contact1Column = document.getElementById('contact1-column').value;
+			var firstNameIndex = document.getElementById("first-name-column").value;
+		    var lastNameIndex = document.getElementById("last-name-column").value;
+			// Reset previous errors
+			document.getElementById('firstNameError').style.display = 'none';
+			document.getElementById('contact1Error').style.display = 'none';
+
+			// check if required fields have values
+			if (!firstNameIndex) {
+				document.getElementById('firstNameError').style.display = 'block';
+				return;
+			}
+
+			if(!contact1Column){
+				document.getElementById('contact1Error').style.display = 'block';
+				return;
+			}
+		    
+		    var prefix = document.getElementById("name-prefix").value || "";
+            var prefix = document.getElementById('name-prefix').value || '';
+            var contact1Column = document.getElementById('contact1-column').value;
+            var contact2Column = document.getElementById('contact2-column').value;
+            var emailColumn = document.getElementById('email-column').value;
+            var addressColumn = document.getElementById('address-column').value;
+            var bdayColumn = document.getElementById('bday-column').value;
+            var orgColumn = document.getElementById('org-column').value;
+            var groupInfo = document.getElementById('groupInfo-column').value;
+            
+           var vCardData = jsonData.slice(1).reduce(function(vCardString, row) {
+				return vCardString +
+					'BEGIN:VCARD\n' +
+					'VERSION:2.1\n' +
+					(prefix ? 'N:' + (lastNameIndex ? row[lastNameIndex] + ';' : '') + prefix + row[firstNameIndex] + ';;;\n' : '') +
+					(prefix ? 'FN:' + prefix + row[firstNameIndex]  + (lastNameIndex ? ' ' + row[lastNameIndex] : '') + '\n' : '') +
+					(contact1Column ? 'TEL;CELL:' + row[contact1Column] + '\n' : '') +
+					(contact2Column ? 'TEL;HOME:' + row[contact2Column] + '\n' : '') +
+					(emailColumn ? 'EMAIL:' + row[emailColumn] + '\n' : '') +
+					(addressColumn ? 'ADR:' + row[addressColumn] + '\n' : '') +
+					(bdayColumn ? 'BDAY:' + row[bdayColumn] + '\n' : '') +
+					(orgColumn ? 'ORG:' + row[orgColumn] + '\n' : '') +
+					(groupInfo ? 'NOTE:' + row[groupInfo] + '\n' : '') +
+					'END:VCARD\n';
+			}, '');
+            
+            var dataUri = 'data:text/plain;charset=utf-8,' + encodeURIComponent(vCardData);
+            var linkElem = document.createElement('a');
+            linkElem.setAttribute('href', dataUri);
+            linkElem.setAttribute('download', 'contacts.vcf');
+            linkElem.click();
+        }
+    });
+		
+		/*document.addEventListener("DOMContentLoaded", (e => {
+    var t, n;
+    document.getElementById("excel-file").addEventListener("change", (function(e) {
+        var o = e.target.files[0];
+        o = e.target.files[0];
+        if ("xlsx" !== o.name.split(".").pop()) return document.getElementById("error-msg").hidden = !1, void(document.getElementById("next-button").disabled = !0);
+        document.getElementById("error-msg").hidden = !0, document.getElementById("next-button").disabled = !1;
+        var d = new FileReader;
+        d.onload = function(e) {
+            var o = new Uint8Array(e.target.result),
+                d = XLSX.read(o, {
+                    type: "array"
+                }),
+                l = d.SheetNames[0],
+                m = d.Sheets[l];
+            n = XLSX.utils.sheet_to_json(m, {
+                header: 1
+            }), t = n[0];
+            for (var u of ["name-column", "contact1-column", "contact2-column", "email-column", "address-column", "url-column", "bday-column", "org-column", "groupInfo-column"]) {
+                var c = document.getElementById(u),
+                    a = document.createElement("option");
+                a.text = "", a.value = "", c.add(a);
+                for (var r = 0; r < t.length; r++) {
+                    var i = document.createElement("option");
+                    i.text = t[r], i.value = r, c.add(i)
+                }
+            }
+        }, d.readAsArrayBuffer(o)
+    }), !1), document.getElementById("upload-form").addEventListener("submit", (function(e) {
+        e.preventDefault(), document.getElementById("upload-form").style.display = "none", document.getElementById("conversion-form").style.display = "block"
+    })), document.getElementById("conversion-form").addEventListener("submit", (function(e) {
+        e.preventDefault();
+        var t = document.getElementById("name-column").value,
+            o = document.getElementById("contact1-column").value;
+        if (document.getElementById("nameError").style.display = "none", document.getElementById("contact1Error").style.display = "none", !t) return void(document.getElementById("nameError").style.display = "block");
+        if (!o) return void(document.getElementById("contact1Error").style.display = "block");
+        var d = document.getElementById("name-prefix").value || "",
+            l = (t = document.getElementById("name-column").value, o = document.getElementById("contact1-column").value, document.getElementById("contact2-column").value),
+            m = document.getElementById("email-column").value,
+            u = document.getElementById("address-column").value,
+            c = document.getElementById("url-column").value,
+            a = document.getElementById("bday-column").value,
+            r = document.getElementById("org-column").value,
+            i = document.getElementById("groupInfo-column").value,
+            y = n.slice(1).reduce((function(e, n) {
+                return e + "BEGIN:VCARD\nVERSION:2.1\n" + (t ? "N:;" + d + n[t] + ";;;\n" : "") + (t ? "FN:" + d + n[t] + "\n" : "") + (o ? "TEL;CELL:" + n[o] + "\n" : "") + (l ? "TEL;HOME:" + n[l] + "\n" : "") + (m ? "EMAIL:" + n[m] + "\n" : "") + (u ? "ADR:" + n[u] + "\n" : "") + (c ? "URL:" + n[c] + "\n" : "") + (a ? "BDAY:" + n[a] + "\n" : "") + (r ? "ORG:" + n[r] + "\n" : "") + (i ? "NOTE:" + n[i] + "\n" : "") + "END:VCARD\n"
+            }), ""),
+            s = "data:text/plain;charset=utf-8," + encodeURIComponent(y),
+            E = document.createElement("a");
+        E.setAttribute("href", s), E.setAttribute("download", "contacts.vcf"), E.click()
+    })), document.getElementById("back-button").addEventListener("click", (function() {
+        document.getElementById("conversion-form").style.display = "none", document.getElementById("upload-form").style.display = "block"
+    }))
+}));*/
         </script>
     </body>
 </html>
