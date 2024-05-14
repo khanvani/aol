@@ -199,8 +199,8 @@
 				return vCardString +
 					'BEGIN:VCARD\n' +
 					'VERSION:2.1\n' +
-					(prefix ? 'N:' + (lastNameIndex ? row[lastNameIndex] + ';' : '') + prefix + row[firstNameIndex] + ';;;\n' : '') +
-					(prefix ? 'FN:' + prefix + row[firstNameIndex]  + (lastNameIndex ? ' ' + row[lastNameIndex] : '') + '\n' : '') +
+					(prefix ? 'N:' + (lastNameIndex ? row[lastNameIndex] + ';' : '') + prefix + ' ' + row[firstNameIndex] + ';;;\n' : '') +
+					(prefix ? 'FN:' + prefix + ' ' + row[firstNameIndex]  + (lastNameIndex ? ' ' + row[lastNameIndex] : '') + '\n' : '') +
 					(contact1Column ? 'TEL;CELL:' + row[contact1Column] + '\n' : '') +
 					(contact2Column ? 'TEL;HOME:' + row[contact2Column] + '\n' : '') +
 					(emailColumn ? 'EMAIL:' + row[emailColumn] + '\n' : '') +
