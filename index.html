@@ -218,7 +218,12 @@
           var bdayColumn = document.getElementById("bday-column").value;
           var orgColumn = document.getElementById("org-column").value;
           var groupInfo = document.getElementById("groupInfo-column").value;
-
+            var currentDate = new Date();
+            var day = ("0" + currentDate.getDate()).slice(-2); // pad day with leading zero
+            var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            var month = monthNames[currentDate.getMonth()];
+            var year = currentDate.getFullYear();
+            var importedOnDate = `ImportedOn:${day}-${month}-${year}`;
           var vCardData = jsonData.slice(1).reduce(function (vCardString, row) {
             var assembledName = prefix + " " + row[firstNameIndex];
             assembledName += lastNameIndex && row[lastNameIndex] ? " " + row[lastNameIndex] : "";
@@ -233,7 +238,7 @@
               "BEGIN:VCARD\n" +
               "VERSION:2.1\n" +
               "N:" +
-              (lastNameIndex && row[lastNameIndex] ? row[lastNameIndex] + ";" : ";") +
+              prefix && (lastNameIndex && row[lastNameIndex] ? row[lastNameIndex] + ";" : ";") +
               row[firstNameIndex] +
               ";;;\n" +
               "FN:" +
@@ -245,7 +250,7 @@
               (addressColumn ? "ADR:" + row[addressColumn] + "\n" : "") +
               (bdayColumn ? "BDAY:" + row[bdayColumn] + "\n" : "") +
               (orgColumn ? "ORG:" + row[orgColumn] + "\n" : "") +
-              (groupInfo ? "NOTE:" + row[groupInfo] + "\n" : "") +
+              ("NOTE:" + importedOnDate  + (groupInfo ? row[groupInfo] : "") + "\n") +
               "END:VCARD\n"
             );
           }, "");
