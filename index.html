@@ -238,7 +238,7 @@
               "BEGIN:VCARD\n" +
               "VERSION:2.1\n" +
               "N:" +
-              prefix && (lastNameIndex && row[lastNameIndex] ? row[lastNameIndex] + ";" : ";") +
+              prefix + " " + (lastNameIndex && row[lastNameIndex] ? row[lastNameIndex] + ";" : ";") +
               row[firstNameIndex] +
               ";;;\n" +
               "FN:" +
