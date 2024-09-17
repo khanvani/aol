@@ -223,7 +223,7 @@
             var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
             var month = monthNames[currentDate.getMonth()];
             var year = currentDate.getFullYear();
-            var importedOnDate = `ImportedOn:${day}-${month}-${year}`;
+            var importedOnDate = `ImportedOn:${day}-${month}-${year}  `;
           var vCardData = jsonData.slice(1).reduce(function (vCardString, row) {
             var assembledName = prefix + " " + row[firstNameIndex];
             assembledName += lastNameIndex && row[lastNameIndex] ? " " + row[lastNameIndex] : "";
