@@ -190,133 +190,52 @@
         }
 
         function convertAndDownloadVCard(event) {
-          event.preventDefault();
-          var contact1Column = document.getElementById("contact1-column").value;
-          var firstNameIndex = document.getElementById("first-name-column").value;
-          var lastNameIndex = document.getElementById("last-name-column").value;
-          // Reset previous errors
-          document.getElementById("firstNameError").style.display = "none";
-          document.getElementById("contact1Error").style.display = "none";
+  event.preventDefault();
 
-          // check if required fields have values
-          if (!firstNameIndex) {
-            document.getElementById("firstNameError").style.display = "block";
-            return;
-          }
+  // Retrieve input values with document.getElementById() just once for efficiency
+  const inputFields = ['name-prefix', 'first-name-column', 'last-name-column', 'contact1-column', 'contact2-column', 'email-column', 'address-column', 'bday-column', 'org-column', 'groupInfo-column'];
+  const inputValues = Object.fromEntries(inputFields.map(id => [id, document.getElementById(id).value.trim()]));
+  // Reset previous errors and validate required fields
+  ['firstNameError', 'contact1Error'].forEach(errorId => document.getElementById(errorId).style.display = !inputValues[errorId.replace('Error', '-column')] ? 'block' : 'none');
+  if (!inputValues['first-name-column'] || !inputValues['contact1-column']) return;
 
-          if (!contact1Column) {
-            document.getElementById("contact1Error").style.display = "block";
-            return;
-          }
+  // Format current date
+  const currentDate = new Date();
+  const importedOnDate = `ImportedOn:${currentDate.getDate().toString().padStart(2, '0')}-${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][currentDate.getMonth()]}-${currentDate.getFullYear()}  `;
 
-          var prefix = document.getElementById("name-prefix").value || "";
-          var prefix = document.getElementById("name-prefix").value || "";
-          var contact1Column = document.getElementById("contact1-column").value;
-          var contact2Column = document.getElementById("contact2-column").value;
-          var emailColumn = document.getElementById("email-column").value;
-          var addressColumn = document.getElementById("address-column").value;
-          var bdayColumn = document.getElementById("bday-column").value;
-          var orgColumn = document.getElementById("org-column").value;
-          var groupInfo = document.getElementById("groupInfo-column").value;
-            var currentDate = new Date();
-            var day = ("0" + currentDate.getDate()).slice(-2); // pad day with leading zero
-            var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            var month = monthNames[currentDate.getMonth()];
-            var year = currentDate.getFullYear();
-            var importedOnDate = `ImportedOn:${day}-${month}-${year}  `;
-          var vCardData = jsonData.slice(1).reduce(function (vCardString, row) {
-            var assembledName = prefix + " " + row[firstNameIndex];
-            assembledName += lastNameIndex && row[lastNameIndex] ? " " + row[lastNameIndex] : "";
-            console.log(lastNameIndex);
-            console.log(firstNameIndex);
-            console.log(row[lastNameIndex]);
-            console.log(row[firstNameIndex]);
-            console.log(row);
+  // Assuming `jsonData` is an array of arrays
+  const vCardData = jsonData.slice(1).reduce((vCardString, row) => {
+    const assembledName = `${inputValues['name-prefix']} ${row[inputValues['first-name-column']]}${inputValues['last-name-column'] ? " " + row[inputValues['last-name-column']] : ""}`.trim();
+    const vCardFields = [
+      "BEGIN:VCARD",
+      "VERSION:2.1",
+      `N:${inputValues['last-name-column'] ? row[inputValues['last-name-column']] : ''};${row[inputValues['first-name-column']]};;;`,
+      `FN:${assembledName}`,
+      inputValues['contact1-column'] ? `TEL;CELL:${row[inputValues['contact1-column']]}` : "",
+      inputValues['contact2-column'] ? `TEL;HOME:${row[inputValues['contact2-column']]}` : "",
+      inputValues['email-column'] ? `EMAIL:${row[inputValues['email-column']]}` : "",
+      inputValues['address-column'] ? `ADR:${row[inputValues['address-column']]}` : "",
+      inputValues['bday-column'] ? `BDAY:${row[inputValues['bday-column']]}` : "",
+      inputValues['org-column'] ? `ORG:${row[inputValues['org-column']]}` : "",
+      `NOTE:${importedOnDate}${inputValues['groupInfo-column'] ? row[inputValues['groupInfo-column']] : ""}`,
+      "END:VCARD"
+    ].filter(line => line !== "").join("\n");
 
-            return (
-              vCardString +
-              "BEGIN:VCARD\n" +
-              "VERSION:2.1\n" +
-              "N:" +
-              prefix + " " + (lastNameIndex && row[lastNameIndex] ? row[lastNameIndex] + ";" : ";") +
-              row[firstNameIndex] +
-              ";;;\n" +
-              "FN:" +
-              assembledName.trim() +
-              "\n" +
-              (contact1Column ? "TEL;CELL:" + row[contact1Column] + "\n" : "") +
-              (contact2Column ? "TEL;HOME:" + row[contact2Column] + "\n" : "") +
-              (emailColumn ? "EMAIL:" + row[emailColumn] + "\n" : "") +
-              (addressColumn ? "ADR:" + row[addressColumn] + "\n" : "") +
-              (bdayColumn ? "BDAY:" + row[bdayColumn] + "\n" : "") +
-              (orgColumn ? "ORG:" + row[orgColumn] + "\n" : "") +
-              ("NOTE:" + importedOnDate  + (groupInfo ? row[groupInfo] : "") + "\n") +
-              "END:VCARD\n"
-            );
-          }, "");
+    return `${vCardString}${vCardFields}\n`;
+  }, "");
 
-          var dataUri = "data:text/plain;charset=utf-8," + encodeURIComponent(vCardData);
-          var linkElem = document.createElement("a");
-          linkElem.setAttribute("href", dataUri);
-          linkElem.setAttribute("download", "contacts.vcf");
-          linkElem.click();
-        }
-      });
+  initiateDownload(vCardData, "contacts.vcf");
+}
 
-      /*document.addEventListener("DOMContentLoaded", (e => {
-    var t, n;
-    document.getElementById("excel-file").addEventListener("change", (function(e) {
-        var o = e.target.files[0];
-        o = e.target.files[0];
-        if ("xlsx" !== o.name.split(".").pop()) return document.getElementById("error-msg").hidden = !1, void(document.getElementById("next-button").disabled = !0);
-        document.getElementById("error-msg").hidden = !0, document.getElementById("next-button").disabled = !1;
-        var d = new FileReader;
-        d.onload = function(e) {
-            var o = new Uint8Array(e.target.result),
-                d = XLSX.read(o, {
-                    type: "array"
-                }),
-                l = d.SheetNames[0],
-                m = d.Sheets[l];
-            n = XLSX.utils.sheet_to_json(m, {
-                header: 1
-            }), t = n[0];
-            for (var u of ["name-column", "contact1-column", "contact2-column", "email-column", "address-column", "url-column", "bday-column", "org-column", "groupInfo-column"]) {
-                var c = document.getElementById(u),
-                    a = document.createElement("option");
-                a.text = "", a.value = "", c.add(a);
-                for (var r = 0; r < t.length; r++) {
-                    var i = document.createElement("option");
-                    i.text = t[r], i.value = r, c.add(i)
-                }
-            }
-        }, d.readAsArrayBuffer(o)
-    }), !1), document.getElementById("upload-form").addEventListener("submit", (function(e) {
-        e.preventDefault(), document.getElementById("upload-form").style.display = "none", document.getElementById("conversion-form").style.display = "block"
-    })), document.getElementById("conversion-form").addEventListener("submit", (function(e) {
-        e.preventDefault();
-        var t = document.getElementById("name-column").value,
-            o = document.getElementById("contact1-column").value;
-        if (document.getElementById("nameError").style.display = "none", document.getElementById("contact1Error").style.display = "none", !t) return void(document.getElementById("nameError").style.display = "block");
-        if (!o) return void(document.getElementById("contact1Error").style.display = "block");
-        var d = document.getElementById("name-prefix").value || "",
-            l = (t = document.getElementById("name-column").value, o = document.getElementById("contact1-column").value, document.getElementById("contact2-column").value),
-            m = document.getElementById("email-column").value,
-            u = document.getElementById("address-column").value,
-            c = document.getElementById("url-column").value,
-            a = document.getElementById("bday-column").value,
-            r = document.getElementById("org-column").value,
-            i = document.getElementById("groupInfo-column").value,
-            y = n.slice(1).reduce((function(e, n) {
-                return e + "BEGIN:VCARD\nVERSION:2.1\n" + (t ? "N:;" + d + n[t] + ";;;\n" : "") + (t ? "FN:" + d + n[t] + "\n" : "") + (o ? "TEL;CELL:" + n[o] + "\n" : "") + (l ? "TEL;HOME:" + n[l] + "\n" : "") + (m ? "EMAIL:" + n[m] + "\n" : "") + (u ? "ADR:" + n[u] + "\n" : "") + (c ? "URL:" + n[c] + "\n" : "") + (a ? "BDAY:" + n[a] + "\n" : "") + (r ? "ORG:" + n[r] + "\n" : "") + (i ? "NOTE:" + n[i] + "\n" : "") + "END:VCARD\n"
-            }), ""),
-            s = "data:text/plain;charset=utf-8," + encodeURIComponent(y),
-            E = document.createElement("a");
-        E.setAttribute("href", s), E.setAttribute("download", "contacts.vcf"), E.click()
-    })), document.getElementById("back-button").addEventListener("click", (function() {
-        document.getElementById("conversion-form").style.display = "none", document.getElementById("upload-form").style.display = "block"
-    }))
-}));*/
+function initiateDownload(data, filename) {
+  const dataUri = "data:text/plain;charset=utf-8," + encodeURIComponent(data);
+  const linkElem = document.createElement("a");
+  linkElem.setAttribute("href", dataUri);
+  linkElem.setAttribute("download", filename);
+  document.body.appendChild(linkElem); // Required for Firefox
+  linkElem.click();
+  document.body.removeChild(linkElem); // Clean up
+}
     </script>
   </body>
 </html>
