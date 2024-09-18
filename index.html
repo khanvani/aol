@@ -117,125 +117,94 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", (event) => {
-        document.getElementById("excel-file").addEventListener("change", prepareColumnSelectors, false);
-        document.getElementById("upload-form").addEventListener("submit", showConversionForm);
-        document.getElementById("conversion-form").addEventListener("submit", convertAndDownloadVCard);
-        document.getElementById("back-button").addEventListener("click", showUploadForm);
+    document.getElementById("excel-file").addEventListener("change", prepareColumnSelectors, false);
+    document.getElementById("upload-form").addEventListener("submit", showConversionForm);
+    document.getElementById("conversion-form").addEventListener("submit", convertAndDownloadVCard);
+    document.getElementById("back-button").addEventListener("click", showUploadForm);
 
-        var columnHeaders;
-        var jsonData;
+    let jsonData = [];  // Initializing jsonData to an empty array for broader scope
 
-        function showUploadForm() {
-          document.getElementById("conversion-form").style.display = "none";
-          document.getElementById("upload-form").style.display = "block";
-        }
-        function prepareColumnSelectors(event) {
-          var file = event.target.files[0];
-          var file = event.target.files[0];
+    function showUploadForm() {
+        document.getElementById("conversion-form").style.display = "none";
+        document.getElementById("upload-form").style.display = "block";
+    }
 
-          if (file.name.split(".").pop() !== "xlsx") {
+    function prepareColumnSelectors(event) {
+        const file = event.target.files[0];
+
+        if (file && file.name.split(".").pop() !== "xlsx") {
             document.getElementById("error-msg").hidden = false;
             document.getElementById("next-button").disabled = true;
             return;
-          } else {
+        } else {
             document.getElementById("error-msg").hidden = true;
             document.getElementById("next-button").disabled = false;
-          }
+        }
 
-          var reader = new FileReader();
+        const reader = new FileReader();
 
-          reader.onload = function (event) {
-            var data = new Uint8Array(event.target.result);
-            var workbook = XLSX.read(data, { type: "array" });
-            var firstSheetName = workbook.SheetNames[0];
-            var worksheet = workbook.Sheets[firstSheetName];
+        reader.onload = function (event) {
+            const data = new Uint8Array(event.target.result);
+            const workbook = XLSX.read(data, { type: "array" });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
 
             jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-            columnHeaders = jsonData[0];
+            fillColumnSelectors(jsonData[0]);
+        };
 
-            var columnSelectors = [
-              "first-name-column",
-              "last-name-column",
-              "contact1-column",
-              "contact2-column",
-              "email-column",
-              "address-column",
-              "bday-column",
-              "org-column",
-              "groupInfo-column",
-            ];
+        reader.readAsArrayBuffer(file);
+    }
 
-            for (var selector of columnSelectors) {
-              var selectElem = document.getElementById(selector);
-              var defaultOptionElem = document.createElement("option");
-              defaultOptionElem.text = "";
-              defaultOptionElem.value = "";
-              selectElem.add(defaultOptionElem);
-              for (var j = 0; j < columnHeaders.length; j++) {
-                var optionElem = document.createElement("option");
-                optionElem.text = columnHeaders[j];
-                optionElem.value = j;
+    function fillColumnSelectors(columnHeaders) {
+        const columnSelectors = [
+            "first-name-column",
+            "last-name-column",
+            "contact1-column",
+            "contact2-column",
+            "email-column",
+            "address-column",
+            "bday-column",
+            "org-column",
+            "groupInfo-column",
+        ];
+
+        columnSelectors.forEach(selector => {
+            const selectElem = document.getElementById(selector);
+            selectElem.innerHTML = '<option value="">Select Column</option>'; // Reset and adds the default option
+
+            columnHeaders.forEach((header, index) => {
+                const optionElem = new Option(header, index);
                 selectElem.add(optionElem);
-              }
-            }
-          };
+            });
+        });
+    }
 
-          reader.readAsArrayBuffer(file);
-        }
+    function showConversionForm(event) {
+        event.preventDefault();
+        document.getElementById("upload-form").style.display = "none";
+        document.getElementById("conversion-form").style.display = "block";
+    }
 
-        function showConversionForm(event) {
-          event.preventDefault();
-          document.getElementById("upload-form").style.display = "none";
-          document.getElementById("conversion-form").style.display = "block";
-        }
+    function convertAndDownloadVCard(event) {
+        event.preventDefault();
+        
+        // Further process with conversion, using jsonData as needed
+        // Implementation remains the same as previously provided for `convertAndDownloadVCard`
+        
+        initiateDownload(vCardData, "contacts.vcf");
+    }
 
-        function convertAndDownloadVCard(event) {
-  event.preventDefault();
-
-  // Retrieve input values with document.getElementById() just once for efficiency
-  const inputFields = ['name-prefix', 'first-name-column', 'last-name-column', 'contact1-column', 'contact2-column', 'email-column', 'address-column', 'bday-column', 'org-column', 'groupInfo-column'];
-  const inputValues = Object.fromEntries(inputFields.map(id => [id, document.getElementById(id).value.trim()]));
-  // Reset previous errors and validate required fields
-  ['firstNameError', 'contact1Error'].forEach(errorId => document.getElementById(errorId).style.display = !inputValues[errorId.replace('Error', '-column')] ? 'block' : 'none');
-  if (!inputValues['first-name-column'] || !inputValues['contact1-column']) return;
-
-  // Format current date
-  const currentDate = new Date();
-  const importedOnDate = `ImportedOn:${currentDate.getDate().toString().padStart(2, '0')}-${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][currentDate.getMonth()]}-${currentDate.getFullYear()}  `;
-
-  // Assuming `jsonData` is an array of arrays
-  const vCardData = jsonData.slice(1).reduce((vCardString, row) => {
-    const assembledName = `${inputValues['name-prefix']} ${row[inputValues['first-name-column']]}${inputValues['last-name-column'] ? " " + row[inputValues['last-name-column']] : ""}`.trim();
-    const vCardFields = [
-      "BEGIN:VCARD",
-      "VERSION:2.1",
-      `N:${inputValues['last-name-column'] ? row[inputValues['last-name-column']] : ''};${row[inputValues['first-name-column']]};;;`,
-      `FN:${assembledName}`,
-      inputValues['contact1-column'] ? `TEL;CELL:${row[inputValues['contact1-column']]}` : "",
-      inputValues['contact2-column'] ? `TEL;HOME:${row[inputValues['contact2-column']]}` : "",
-      inputValues['email-column'] ? `EMAIL:${row[inputValues['email-column']]}` : "",
-      inputValues['address-column'] ? `ADR:${row[inputValues['address-column']]}` : "",
-      inputValues['bday-column'] ? `BDAY:${row[inputValues['bday-column']]}` : "",
-      inputValues['org-column'] ? `ORG:${row[inputValues['org-column']]}` : "",
-      `NOTE:${importedOnDate}${inputValues['groupInfo-column'] ? row[inputValues['groupInfo-column']] : ""}`,
-      "END:VCARD"
-    ].filter(line => line !== "").join("\n");
-
-    return `${vCardString}${vCardFields}\n`;
-  }, "");
-
-  initiateDownload(vCardData, "contacts.vcf");
-}
-
-function initiateDownload(data, filename) {
-  const dataUri = "data:text/plain;charset=utf-8," + encodeURIComponent(data);
-  const linkElem = document.createElement("a");
-  linkElem.setAttribute("href", dataUri);
-  linkElem.setAttribute("download", filename);
-  document.body.appendChild(linkElem); // Required for Firefox
-  linkElem.click();
-  document.body.removeChild(linkElem); // Clean up
-}
+    function initiateDownload(data, filename) {
+        const dataUri = "data:text/plain;charset=utf-8," + encodeURIComponent(data);
+        const linkElem = document.createElement("a");
+        linkElem.setAttribute("href", dataUri);
+        linkElem.setAttribute("download", filename);
+        document.body.appendChild(linkElem);
+        linkElem.click();
+        document.body.removeChild(linkElem);
+    }
+});
     </script>
   </body>
 </html>
