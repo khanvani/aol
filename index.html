@@ -187,13 +187,44 @@
     }
 
     function convertAndDownloadVCard(event) {
-        event.preventDefault();
-        
-        // Further process with conversion, using jsonData as needed
-        // Implementation remains the same as previously provided for `convertAndDownloadVCard`
-        
-        initiateDownload(vCardData, "contacts.vcf");
+      event.preventDefault();
+    
+      // Retrieve input values with document.getElementById() just once for efficiency
+      const inputFields = ['name-prefix', 'first-name-column', 'last-name-column', 'contact1-column', 'contact2-column', 'email-column', 'address-column', 'bday-column', 'org-column', 'groupInfo-column'];
+      const inputValues = Object.fromEntries(inputFields.map(id => [id, document.getElementById(id).value.trim()]));
+      // Reset previous errors and validate required fields
+      ['firstNameError', 'contact1Error'].forEach(errorId => document.getElementById(errorId).style.display = !inputValues[errorId.replace('Error', '-column')] ? 'block' : 'none');
+      if (!inputValues['first-name-column'] || !inputValues['contact1-column']) return;
+    
+      // Format current date
+      const currentDate = new Date();
+      const importedOnDate = `ImportedOn:${currentDate.getDate().toString().padStart(2, '0')}-${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][currentDate.getMonth()]}-${currentDate.getFullYear()}  `;
+    
+      // Assuming `jsonData` is an array of arrays
+      const vCardData = jsonData.slice(1).reduce((vCardString, row) => {
+        const assembledName = `${inputValues['name-prefix']} ${row[inputValues['first-name-column']]}${inputValues['last-name-column'] ? " " + row[inputValues['last-name-column']] : ""}`.trim();
+        const vCardFields = [
+          "BEGIN:VCARD",
+          "VERSION:2.1",
+          `N:${inputValues['last-name-column'] ? row[inputValues['last-name-column']] : ''};${row[inputValues['first-name-column']]};;;`,
+          `FN:${assembledName}`,
+          inputValues['contact1-column'] ? `TEL;CELL:${row[inputValues['contact1-column']]}` : "",
+          inputValues['contact2-column'] ? `TEL;HOME:${row[inputValues['contact2-column']]}` : "",
+          inputValues['email-column'] ? `EMAIL:${row[inputValues['email-column']]}` : "",
+          inputValues['address-column'] ? `ADR:${row[inputValues['address-column']]}` : "",
+          inputValues['bday-column'] ? `BDAY:${row[inputValues['bday-column']]}` : "",
+          inputValues['org-column'] ? `ORG:${row[inputValues['org-column']]}` : "",
+          `NOTE:${importedOnDate}${inputValues['groupInfo-column'] ? row[inputValues['groupInfo-column']] : ""}`,
+          "END:VCARD"
+        ].filter(line => line !== "").join("\n");
+    
+        return `${vCardString}${vCardFields}\n`;
+      }, "");
+    
+      initiateDownload(vCardData, "contacts.vcf");
     }
+
+
 
     function initiateDownload(data, filename) {
         const dataUri = "data:text/plain;charset=utf-8," + encodeURIComponent(data);
