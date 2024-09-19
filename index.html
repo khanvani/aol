@@ -215,13 +215,13 @@
         "VERSION:3.0",
         nameField,
         `FN:${formattedName}`,
-        values['contact1-column'] ? `TEL;TYPE=CELL:${row[values['contact1-column']]}` : "",
-        values['contact2-column'] ? `TEL;TYPE=HOME:${row[values['contact2-column']]}` : "",
-        values['email-column'] ? `EMAIL:${row[values['email-column']]}` : "",
-        values['address-column'] ? `ADR:${row[values['address-column']]}` : "",
-        values['bday-column'] ? `BDAY:${row[values['bday-column']]}` : "",
-        values['org-column'] ? `ORG:${row[values['org-column']]}` : "",
-        `NOTE:${importedOnDate}${values['groupInfo-column'] ? row[values['groupInfo-column']] : ""}`,
+        row[values['contact1-column']] ? `TEL;TYPE=CELL:${row[values['contact1-column']]}` : "",
+        row[values['contact2-column']] ? `TEL;TYPE=HOME:${row[values['contact2-column']]}` : "",
+        row[values['email-column']] ? `EMAIL:${row[values['email-column']]}` : "",
+        row[values['address-column']] ? `ADR:${row[values['address-column']]}` : "",
+        row[values['bday-column']] ? `BDAY:${row[values['bday-column']]}` : "",
+        row[values['org-column']] ? `ORG:${row[values['org-column']]}` : "",
+        `NOTE:${importedOnDate}${row[values['groupInfo-column']] ? row[values['groupInfo-column']] : ""}`,
         "END:VCARD"
     ].filter(Boolean).join('\n');
 
