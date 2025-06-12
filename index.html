@@ -93,6 +93,10 @@
                   <label for="groupInfo-column">Group:</label>
                   <select class="form-control" id="groupInfo-column"></select>
                 </div>
+                <div class="form-group">
+                  <label for="job-title-column">Job Title:</label>
+                  <select class="form-control" id="job-title-column"></select>
+                </div>
 
                 <button type="button" id="back-button" class="btn btn-secondary float-left">Back</button>
                 <button type="submit" class="btn btn-primary float-right">Convert and Download</button>
@@ -167,12 +171,13 @@
             "bday-column",
             "org-column",
             "groupInfo-column",
+            "job-title-column", // <-- Add this line
         ];
 
         columnSelectors.forEach(selector => {
             const selectElem = document.getElementById(selector);
-            selectElem.innerHTML = '<option value="">Select Column</option>'; // Reset and adds the default option
-
+            if (!selectElem) return; // Skip if not present
+            selectElem.innerHTML = '<option value="">Select Column</option>';
             columnHeaders.forEach((header, index) => {
                 const optionElem = new Option(header, index);
                 selectElem.add(optionElem);
@@ -190,7 +195,10 @@
     event.preventDefault();
 
     // Retrieve input values
-    const inputs = ['name-prefix', 'first-name-column', 'last-name-column', 'contact1-column', 'contact2-column', 'email-column', 'address-column', 'bday-column', 'org-column', 'groupInfo-column'];
+    const inputs = [
+        'name-prefix', 'first-name-column', 'last-name-column', 'contact1-column', 'contact2-column',
+        'email-column', 'address-column', 'bday-column', 'org-column', 'groupInfo-column', 'job-title-column' // <-- Add here
+    ];
     const values = {};
     inputs.forEach(id => {
         values[id] = document.getElementById(id).value.trim();
@@ -203,27 +211,27 @@
     let vCardData = '';
 
     jsonData.slice(1).forEach(row => { // Skipping header row
-        let [firstName, ...restOfName] = row[values['first-name-column']].split(/\s+/);
-        let lastName = values['last-name-column'] ? row[values['last-name-column']] : restOfName.join(' '); // Append the rest of the name as last name if the last name column is not specified
-
+        let firstName = row[values['first-name-column']] || "";
+        let lastName = values['last-name-column'] ? (row[values['last-name-column']] || "") : "";
         // Apply prefix if available
         let formattedName = `${values['name-prefix']} ${firstName} ${lastName}`.trim();
         let nameField = `N:${lastName};${firstName};;${values['name-prefix']};`;
 
         let vCardEntry = [
-        "BEGIN:VCARD",
-        "VERSION:3.0",
-        nameField,
-        `FN:${formattedName}`,
-        row[values['contact1-column']] ? `TEL;TYPE=CELL:${row[values['contact1-column']]}` : "",
-        row[values['contact2-column']] ? `TEL;TYPE=HOME:${row[values['contact2-column']]}` : "",
-        row[values['email-column']] ? `EMAIL:${row[values['email-column']]}` : "",
-        row[values['address-column']] ? `ADR:${row[values['address-column']]}` : "",
-        row[values['bday-column']] ? `BDAY:${row[values['bday-column']]}` : "",
-        row[values['org-column']] ? `ORG:${row[values['org-column']]}` : "",
-        `NOTE:${importedOnDate}${row[values['groupInfo-column']] ? row[values['groupInfo-column']] : ""}`,
-        "END:VCARD"
-    ].filter(Boolean).join('\n');
+            "BEGIN:VCARD",
+            "VERSION:3.0",
+            nameField,
+            `FN:${formattedName}`,
+            row[values['contact1-column']] ? `TEL;TYPE=CELL:${row[values['contact1-column']]}` : "",
+            row[values['contact2-column']] ? `TEL;TYPE=HOME:${row[values['contact2-column']]}` : "",
+            row[values['email-column']] ? `EMAIL:${row[values['email-column']]}` : "",
+            row[values['address-column']] ? `ADR:${row[values['address-column']]}` : "",
+            row[values['bday-column']] ? `BDAY:${row[values['bday-column']]}` : "",
+            row[values['org-column']] ? `ORG:${row[values['org-column']]}` : "",
+            row[values['job-title-column']] ? `TITLE:${row[values['job-title-column']]}` : "", // <-- Add this line
+            `NOTE:${importedOnDate}${row[values['groupInfo-column']] ? row[values['groupInfo-column']] : ""}`,
+            "END:VCARD"
+        ].filter(Boolean).join('\n');
 
         vCardData += vCardEntry + '\n';
     });
